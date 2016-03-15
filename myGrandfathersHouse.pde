@@ -96,9 +96,11 @@ void draw() {
       capture = false;
     }
     delay(30);
-    lastFrame.copy();
+    //lastFrame.copy();
+    lastFrame = get();
+    background(0);
     tint(255,255);
-    image(lastFrame, 10, 10, 600, 900);
+    image(lastFrame, 10, 10, 900, 600);
   }
 }
 
