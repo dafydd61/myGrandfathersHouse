@@ -6,3 +6,7 @@ application.windows32
 application.windows64
 application.macosx
 captures
+*.tif
+*.tiff
+*.jpg
+*.png
