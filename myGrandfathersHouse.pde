@@ -20,7 +20,7 @@ int numSlices = 8;
 PImage slices, inset;
 
 float aspectRatio, windowRatio, scale;
-float alpha = 255;
+float alpha = 255, playbackSpeed = 1;
 int imageWidth, imageHeight, insetWidth, insetHeight, sliceWidth;
 
 boolean capture = false;
@@ -30,6 +30,8 @@ Movie movie;
 
 void setup() {
   size(3840, 2160);
+  
+  // 0. Figure out the window
   windowRatio = float(width) / height;
   println("Window aspect ratio: " + windowRatio);
   insetWidth = 1000;
@@ -47,7 +49,9 @@ void setup() {
   delay(100);
   
   // 2. Get movie dimensions and aspect ratio
-  movie.loop();
+  //movie.loop();
+  movie.play();
+  //movie.pause();
   movie.read();
   println("Movie loaded: " + movie.width + "*" + movie.height);
   aspectRatio = float(movie.width)/movie.height;
@@ -67,6 +71,7 @@ void setup() {
   sliceWidth = int(width/numSlices);
   println("Slice width: " + sliceWidth);
 
+  // Load the first frame
   background(0);
   image(movie, 0, 0, imageWidth, imageHeight);
   inset = get();
@@ -75,10 +80,11 @@ void setup() {
 void movieSelected(File selection) {
   println("Loading movie...");
   if ( selection == null ) {
-      movie = new Movie(this, sketchPath("") + "../media/segments/01-01-taxis.mov");
+    println("I need a movie to run!");
+    exit();
   } else {
-      movie = new Movie(this, selection.getAbsolutePath());
-      println("Got your selection");
+    movie = new Movie(this, selection.getAbsolutePath());
+    println("Loaded " + selection.getAbsolutePath());
   }
 }
 
@@ -88,6 +94,8 @@ void movieEvent(Movie m) {
 
 void draw() {
   if ( movie != null ) {
+    float position = (frameCount / 30.0) * playbackSpeed % movie.duration();
+    movie.jump(position);
     tint(255, 255);
     image(inset, 0, 0, width, height);
     if (!freeze) alpha = map(mouseX, 0, 1000, 0, 255);
@@ -115,8 +123,8 @@ void draw() {
     }
     image(slices, 0, 0, imageWidth, imageHeight);
     if ( capture ) {
-      save(frameCount + ".jpg" );
-      capture = false;
+      save(frameCount + ".tif" );
+      //capture = false;
     }
     delay(30);
     inset = get();
@@ -126,6 +134,12 @@ void draw() {
     fill(255);
     text("Alpha: " + alpha, 10, insetHeight + 40);
     text("Freeze: " + freeze, 10, insetHeight + 60);
+    text("Position: " + position, 10, insetHeight + 80);
+    text("Playback speed: " + playbackSpeed, 10, insetHeight + 100);
+    if (capture) {
+      text("Capturing", 10, insetHeight + 110);
+      capture = false;
+    }
   }
 }
 
@@ -136,6 +150,19 @@ void keyPressed() {
       break;
     case 'f':
       freeze = !freeze;
+      break;
+    case 'w':
+      playbackSpeed -= .2;
+      break;
+    case 'e':
+      playbackSpeed += .2;
+      break;
+    case 'r':
+      playbackSpeed = 1;
+      break;
+    case 'q':
+      exit();
+      break;
     default:
       break;
   }
